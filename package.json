@@ -17,5 +17,9 @@
     "source": {
         "git": "https://git.ps.informatik.uni-kiel.de/curry-packages/flatcurry.git",
         "tag": "$version"
+    },
+    "testsuite": {
+        "src-dir": "test",
+        "modules": [  "testFlatCurryXML" ]
     }
 }
