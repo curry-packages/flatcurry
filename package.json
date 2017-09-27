@@ -13,8 +13,10 @@
         "pakcs": ">= 2.0.0",
         "kics2": ">= 2.0.0"
     },
-    "exportedModules": [ "FlatCurry.Compact", "FlatCurry.FlexRigid",
-                         "FlatCurry.Pretty", "FlatCurry.Show",
+    "exportedModules": [ "FlatCurry.Compact", "FlatCurry.Files",
+                         "FlatCurry.FlexRigid", "FlatCurry.Goodies",
+                         "FlatCurry.Pretty", "FlatCurry.Read",
+                         "FlatCurry.Show", "FlatCurry.Types",
                          "FlatCurry.XML" ],
     "source": {
         "git": "https://git.ps.informatik.uni-kiel.de/curry-packages/flatcurry.git",
