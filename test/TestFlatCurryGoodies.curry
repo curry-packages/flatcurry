@@ -1,7 +1,7 @@
---- Some tests for library FlatCurryUtils.
+--- Some tests for library FlatCurry.Goodies
 ---
 --- To run all tests automatically by the currycheck tool, use the command:
---- "currycheck testFlatCurryUtils"
+--- "curry check TestFlatCurryGoodies"
 --- 
 --- @author Sebastian Fischer
 
