@@ -102,7 +102,7 @@ parseFlatCurryFile withImp verb loadpath modname suffixes = do
   when verb $ putStr "Reading FlatCurry files "
   eiMods <- tryReadFlatCurryFile withImp verb loadpath modname suffixes
   return (either (error . notFound) id eiMods)
- where defs = [( map toUpper curryCompiler
+ where defs = [( "__" ++ map toUpper curryCompiler ++ "__"
                , curryCompilerMajorVersion * 100 + curryCompilerMinorVersion )]
        notFound mods = "FlatCurry file not found for the following module(s): "
                          ++ unwords mods
