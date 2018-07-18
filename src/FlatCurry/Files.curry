@@ -10,17 +10,17 @@
 
 module FlatCurry.Files where
 
-import Directory       (doesFileExist)
-import Distribution    ( FrontendParams, FrontendTarget (..), defaultParams
-                       , setQuiet, inCurrySubdir, stripCurrySuffix
-                       , callFrontendWithParams
-                       , lookupModuleSourceInLoadPath, getLoadPathForModule
-                       )
-import FileGoodies     (getFileInPath, lookupFileInPath)
-import FilePath        (takeFileName, (</>), (<.>))
+import System.Directory ( doesFileExist, getFileWithSuffix, findFileWithSuffix )
+import Distribution     ( FrontendParams, FrontendTarget (..), defaultParams
+                        , setQuiet, inCurrySubdir, stripCurrySuffix
+                        , callFrontendWithParams
+                        , lookupModuleSourceInLoadPath, getLoadPathForModule
+                        )
+import System.FilePath  ( takeFileName, (</>), (<.>) )
+import Data.Maybe       ( isNothing )
+import ReadShowTerm     ( readUnqualifiedTerm, showTerm )
+
 import FlatCurry.Types
-import Maybe           (isNothing)
-import ReadShowTerm    (readUnqualifiedTerm, showTerm)
 
 --- I/O action which parses a Curry program and returns the corresponding
 --- FlatCurry program.
@@ -43,7 +43,7 @@ readFlatCurryWithParseOptions progname options = do
   case mbsrc of
     Nothing -> do -- no source file, try to find FlatCurry file in load path:
       loadpath <- getLoadPathForModule progname
-      filename <- getFileInPath (flatCurryFileName (takeFileName progname)) [""]
+      filename <- getFileWithSuffix (flatCurryFileName (takeFileName progname)) [""]
                                 loadpath
       readFlatCurryFile filename
     Just (dir,_) -> do
@@ -107,7 +107,7 @@ readFlatCurryIntWithParseOptions progname options = do
   case mbsrc of
     Nothing -> do -- no source file, try to find FlatCurry file in load path:
       loadpath <- getLoadPathForModule progname
-      filename <- getFileInPath (flatCurryIntName (takeFileName progname)) [""]
+      filename <- getFileWithSuffix (flatCurryIntName (takeFileName progname)) [""]
                                 loadpath
       readFlatCurryFile filename
     Just (dir,_) -> do
@@ -125,11 +125,11 @@ writeFCY file prog = writeFile file (showTerm prog)
 lookupFlatCurryFileInLoadPath :: String -> IO (Maybe String)
 lookupFlatCurryFileInLoadPath modname =
   getLoadPathForModule modname >>=
-  lookupFileInPath (flatCurryFileName modname) [""]
+  findFileWithSuffix (flatCurryFileName modname) [""]
 
 --- Returns the name of the FlatCurry file of a module in the load path,
 --- if this file exists.
 getFlatCurryFileInLoadPath :: String -> IO String
 getFlatCurryFileInLoadPath modname =
   getLoadPathForModule modname >>=
-  getFileInPath (flatCurryFileName modname) [""]
+  getFileWithSuffix (flatCurryFileName modname) [""]
