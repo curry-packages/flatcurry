@@ -5,7 +5,7 @@
 --- a set of main functions.
 ---
 --- @author Michael Hanus, Carsten Heine
---- @version August 2016
+--- @version December 2018
 ------------------------------------------------------------------------------
 
 {-# OPTIONS_CYMAKE -Wno-incomplete-patterns #-}
@@ -19,12 +19,11 @@ import FlatCurry.Files
 import qualified Data.Set.RBTree as RBS
 import qualified Data.Table.RBTree as RBT
 import Data.Maybe
-import Data.List       (nub, union)
-import System.FilePath (takeFileName, (</>))
+import Data.List           (nub, union)
+import System.FilePath     (takeFileName, (</>))
 import System.Directory
-import Sort            (cmpString, leqString)
+import System.Distribution (lookupModuleSourceInLoadPath, stripCurrySuffix)
 import XML
-import Distribution    (lookupModuleSourceInLoadPath, stripCurrySuffix)
 
 infix 0 `requires`
 
@@ -483,8 +482,8 @@ moduleFuns (Prog _ _ _ funs _) = funs
 --- Returns True, if the first name is lexicographically smaller than
 --- the second name using the leString function to compare String.
 leqQName :: QName -> QName -> Bool
-leqQName (m1,n1) (m2,n2) = let cm = cmpString m1 m2
-                            in cm==LT || (cm==EQ && leqString n1 n2)
+leqQName (m1,n1) (m2,n2) = let cm = compare m1 m2
+                            in cm == LT || (cm == EQ && n1 <= n2)
 
 
 -------------------------------------------------------------------------------

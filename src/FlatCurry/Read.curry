@@ -15,12 +15,12 @@ module FlatCurry.Read
   , readFlatCurryIntWithImportsInPath
   ) where
 
-import System.Directory ( getModificationTime, getFileWithSuffix
-                        , findFileWithSuffix )
-import Distribution     ( getLoadPathForModule, lookupModuleSource
-                        , FrontendTarget (FCY), callFrontendWithParams
-                        , defaultParams, setQuiet, setFullPath )
-import System.FilePath  ( normalise, takeBaseName, dropExtension )
+import System.Directory    ( getModificationTime, getFileWithSuffix
+                           , findFileWithSuffix )
+import System.FilePath     ( normalise, takeBaseName )
+import System.CurryPath    ( getLoadPathForModule, lookupModuleSource )
+import System.FrontendExec ( FrontendTarget (FCY), callFrontendWithParams
+                           , defaultParams, setQuiet, setFullPath )
 
 import FlatCurry.Types
 import FlatCurry.Files

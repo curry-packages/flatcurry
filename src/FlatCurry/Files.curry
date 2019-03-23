@@ -4,21 +4,22 @@
 --- to read Curry programs and transform them into this representation.
 ---
 --- @author Michael Hanus, Finn Teegen
---- @version November 2017
---- @category meta
+--- @version December 2018
 ------------------------------------------------------------------------------
 
 module FlatCurry.Files where
 
-import System.Directory ( doesFileExist, getFileWithSuffix, findFileWithSuffix )
-import Distribution     ( FrontendParams, FrontendTarget (..), defaultParams
-                        , setQuiet, inCurrySubdir, stripCurrySuffix
-                        , callFrontendWithParams
-                        , lookupModuleSourceInLoadPath, getLoadPathForModule
-                        )
-import System.FilePath  ( takeFileName, (</>), (<.>) )
-import Data.Maybe       ( isNothing )
-import ReadShowTerm     ( readUnqualifiedTerm, showTerm )
+import System.Directory    ( doesFileExist, getFileWithSuffix
+                           , findFileWithSuffix )
+import System.FilePath     ( takeFileName, (</>), (<.>))
+import System.CurryPath    ( inCurrySubdir, stripCurrySuffix
+                           , lookupModuleSourceInLoadPath, getLoadPathForModule
+                           )
+import System.FrontendExec ( FrontendParams, FrontendTarget (..), defaultParams
+                           , setQuiet, callFrontendWithParams
+                           )
+import ReadShowTerm        (readUnqualifiedTerm, showTerm)
+
 
 import FlatCurry.Types
 
@@ -43,8 +44,9 @@ readFlatCurryWithParseOptions progname options = do
   case mbsrc of
     Nothing -> do -- no source file, try to find FlatCurry file in load path:
       loadpath <- getLoadPathForModule progname
-      filename <- getFileWithSuffix (flatCurryFileName (takeFileName progname)) [""]
-                                loadpath
+      filename <- getFileWithSuffix 
+                     (flatCurryFileName (takeFileName progname)) [""]
+                     loadpath
       readFlatCurryFile filename
     Just (dir,_) -> do
       callFrontendWithParams FCY options progname
@@ -107,8 +109,9 @@ readFlatCurryIntWithParseOptions progname options = do
   case mbsrc of
     Nothing -> do -- no source file, try to find FlatCurry file in load path:
       loadpath <- getLoadPathForModule progname
-      filename <- getFileWithSuffix (flatCurryIntName (takeFileName progname)) [""]
-                                loadpath
+      filename <- getFileWithSuffix
+                    (flatCurryIntName (takeFileName progname)) [""]
+                    loadpath
       readFlatCurryFile filename
     Just (dir,_) -> do
       callFrontendWithParams FINT options progname
