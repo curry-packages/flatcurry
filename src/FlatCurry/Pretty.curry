@@ -8,7 +8,6 @@
 
 module FlatCurry.Pretty where
 
-import Prelude hiding (empty)
 import Text.Pretty
 
 import FlatCurry.Types
