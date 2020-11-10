@@ -37,16 +37,13 @@ showFlatProg (Prog modname imports types funcs ops) =
      ++ "\n " ++ showFlatList showFlatOp ops
      ++ "\n )\n"
 
-showFlatVisibility :: Visibility -> String
 showFlatVisibility Public  = " Public "
 showFlatVisibility Private = " Private "
 
-showFlatFixity :: Fixity -> String
 showFlatFixity InfixOp = " InfixOp "
 showFlatFixity InfixlOp = " InfixlOp "
 showFlatFixity InfixrOp = " InfixrOp "
 
-showFlatOp :: OpDecl -> String
 showFlatOp (Op name fix prec) =
  "(Op " ++ show name ++ showFlatFixity fix ++ show prec ++ ")"
 
@@ -59,12 +56,20 @@ showFlatType (TypeSyn name vis tpars texp) =
   "\n  (TypeSyn " ++ show name ++ showFlatVisibility vis
                   ++ showFlatList show tpars
                   ++ showFlatTypeExpr texp ++ ")"
+showFlatType (TypeNew name vis tpars consdecl) =
+  "\n  (TypeNew " ++ show name ++ showFlatVisibility vis
+                  ++ showFlatList show tpars
+                  ++ showFlatNewCons consdecl ++ ")"
 
-showFlatCons :: ConsDecl -> String
 showFlatCons (Cons cname arity vis types) =
   "(Cons " ++ show cname ++ " " ++ show arity
            ++ showFlatVisibility vis
            ++ showFlatList showFlatTypeExpr types ++ ")"
+
+showFlatNewCons (NewCons cname vis texp) =
+  "(NewCons " ++ show cname
+              ++ showFlatVisibility vis
+              ++ showFlatTypeExpr texp ++ ")"
 
 showFlatFunc :: FuncDecl -> String
 showFlatFunc (Func name arity vis ftype rl) =
@@ -188,7 +193,7 @@ showCurryType_ tf nested (TCons tc ts)
     (tf tc ++ concatMap (\t->' ':showCurryType_ tf True t) ts)
 showCurryType_ tf nested (ForallType tvs te) =
   showBracketsIf nested
-    (unwords ("forall" : map (showCurryType_ tf False . TVar . fst) tvs) ++ " . " ++
+    (unwords ("forall" : map (showCurryType_ tf False . TVar) tvs) ++ " . " ++
      showCurryType_ tf False te)
 
 isFuncType :: TypeExpr -> Bool
@@ -229,7 +234,7 @@ showCurryExpr tf nested b (Comb ct cf [e1,e2])
   = if isStringConstant (Comb ct cf [e1,e2])
     then "\"" ++ showCurryStringConstant (Comb ct cf [e1,e2]) ++ "\""
     else "[" ++
-         intercalate "," (showCurryFiniteList tf b (Comb ct cf [e1,e2]))
+         concat (intersperse "," (showCurryFiniteList tf b (Comb ct cf [e1,e2])))
          ++ "]"
  | snd cf == "(,)" -- pair constructor?
   = "(" ++ showCurryExpr tf False b e1 ++ "," ++
@@ -281,8 +286,7 @@ showCurryExpr tf nested b (Case ctype e cs) =
      showCurryElems (showCurryCase tf (b+2)) cs ++ sceBlanks b)
 
 showCurryExpr tf nested b (Typed e ty) =
-  showBracketsIf nested
-    (showCurryExpr tf True b e ++ " :: " ++ showCurryType tf False ty)
+  showBracketsIf nested (showCurryExpr tf True b e ++ " :: " ++ showCurryType tf False ty)
 
 showCurryVar :: Show a => a -> String
 showCurryVar i = "v" ++ show i
@@ -346,10 +350,8 @@ showCharExpr (Lit (Charc c))
 showCurryElems :: (a -> String) -> [a] -> String
 showCurryElems format elems = intercalate " " (map format elems)
 
-showBracketsIf :: Bool -> String -> String
 showBracketsIf nested s = if nested then '(' : s ++ ")" else s
 
-sceBlanks :: Int -> String
 sceBlanks b = take b (repeat ' ')
 
 -- Is the expression a finite list (with an empty list at the end)?

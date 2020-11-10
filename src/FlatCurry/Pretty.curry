@@ -87,6 +87,9 @@ ppTypeExport o (Type    qn vis _ cs)
 ppTypeExport o (TypeSyn qn vis _ _ )
   | vis == Private = empty
   | otherwise      = ppPrefixQOp o qn
+ppTypeExport o (TypeNew qn vis _ (NewCons _ vis' _))
+  | vis == Private || vis' == Private = empty
+  | otherwise                         = ppPrefixQOp o qn <+> text "(..)"
 
 --- pretty-print the export list of constructors
 ppConsExports :: Options -> [ConsDecl] -> [Doc]
@@ -128,6 +131,8 @@ ppTypeDecl o (Type    qn _ vs cs) = indent o $ (text "data" <+> ppName qn
   <+> hsep (empty : map (ppTVarIndex . fst) vs)) $$ ppConsDecls o cs
 ppTypeDecl o (TypeSyn qn _ vs ty) = indent o $ text "type" <+> ppName qn
   <+> hsep (empty : map (ppTVarIndex . fst) vs) </> equals <+> ppTypeExp o ty
+ppTypeDecl o (TypeNew qn _ vs c)  = indent o $ text "newtype" <+> ppName qn
+  <+> hsep (empty : map (ppTVarIndex . fst) vs) $$ ppNewConsDecl o c
 
 --- pretty-print the constructor declarations
 ppConsDecls :: Options -> [ConsDecl] -> Doc
@@ -137,6 +142,10 @@ ppConsDecls o cs = vsep $ zipWith (<+>) (equals : repeat bar)
 --- pretty print a single constructor
 ppConsDecl :: Options -> ConsDecl -> Doc
 ppConsDecl o (Cons qn _ _ tys) = hsep $ ppPrefixOp qn : map (ppTypeExpr o 2) tys
+
+--- pretty print a single newtype constructor
+ppNewConsDecl :: Options -> NewConsDecl -> Doc
+ppNewConsDecl o (NewCons qn _ ty) = hsep [ppPrefixOp qn, ppTypeExpr o 2 ty]
 
 --- pretty a top-level type expression
 ppTypeExp :: Options -> TypeExpr -> Doc
@@ -154,13 +163,13 @@ ppTypeExpr o p (TCons     qn tys)
                                    (ppPrefixQOp o qn : map (ppTypeExpr o 2) tys)
 ppTypeExpr o p (ForallType vs ty)
   | null vs   = ppTypeExpr o p ty
-  | otherwise = parensIf (p > 0) $ ppQuantifiedVars vs <+> ppTypeExpr o 0 ty
+  | otherwise = parensIf (p > 0) $ ppQuantifiedVars (map fst vs) <+> ppTypeExpr o 0 ty
 
 --- pretty-print explicitly quantified type variables
-ppQuantifiedVars :: [(TVarIndex, Kind)] -> Doc
+ppQuantifiedVars :: [TVarIndex] -> Doc
 ppQuantifiedVars vs
-  | null vs   = empty
-  | otherwise = text "forall" <+> hsep (map (ppTVarIndex . fst) vs) <+> char '.'
+  | null vs = empty
+  | otherwise = text "forall" <+> hsep (map ppTVarIndex vs) <+> char '.'
 
 --- pretty-print a type variable
 ppTVarIndex :: TVarIndex -> Doc
