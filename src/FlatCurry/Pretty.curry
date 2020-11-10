@@ -166,10 +166,10 @@ ppTypeExpr o p (ForallType vs ty)
   | otherwise = parensIf (p > 0) $ ppQuantifiedVars (map fst vs) <+> ppTypeExpr o 0 ty
 
 --- pretty-print explicitly quantified type variables
-ppQuantifiedVars :: [TVarIndex] -> Doc
+ppQuantifiedVars :: [(TVarIndex, Kind)] -> Doc
 ppQuantifiedVars vs
-  | null vs = empty
-  | otherwise = text "forall" <+> hsep (map ppTVarIndex vs) <+> char '.'
+  | null vs   = empty
+  | otherwise = text "forall" <+> hsep (map (ppTVarIndex . fst) vs) <+> char '.'
 
 --- pretty-print a type variable
 ppTVarIndex :: TVarIndex -> Doc
