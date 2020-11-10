@@ -238,7 +238,7 @@ extendTConsWithConsType :: RBS.SetRBT QName -> RBS.SetRBT QName -> [TypeDecl]
 extendTConsWithConsType _ tcons [] = tcons
 extendTConsWithConsType cnames tcons (TypeSyn tname _ _ _ : tds) =
   extendTConsWithConsType cnames (RBS.insert tname tcons) tds
-extendTConsWithConsType cnames tcons (TypeNew tname _ _ cdecl : tds) =
+extendTConsWithConsType cnames tcons (TypeNew tname _ _ cdecls : tds) =
   if any (\cdecl->consName cdecl `RBS.member` cnames) cdecls
   then extendTConsWithConsType cnames (RBS.insert tname tcons) tds
   else extendTConsWithConsType cnames tcons tds
