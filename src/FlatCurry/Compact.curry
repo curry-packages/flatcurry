@@ -176,7 +176,7 @@ computeCompactFlatCurry orgoptions progname =
 makeCompactFlatCurry :: Prog -> [Option] -> IO Prog
 makeCompactFlatCurry mainmod options = do
   (initfuncs,loadedmnames,loadedmods) <- requiredInCompactProg mainmod options
-  let initFuncTable = extendFuncTable RBT.empty
+  let initFuncTable = extendFuncTable (RBT.empty (<))
                                       (concatMap moduleFuns loadedmods)
       required = getRequiredFromOptions options
       loadedreqfuns = concatMap (getRequiredInModule required)
@@ -185,8 +185,8 @@ makeCompactFlatCurry mainmod options = do
   (finalmods,finalfuncs,finalcons,finaltcons) <-
      getCalledFuncs required
                     loadedmnames loadedmods initFuncTable
-                    (foldr RBS.insert RBS.empty initreqfuncs)
-                    RBS.empty RBS.empty
+                    (foldr RBS.insert (RBS.empty (<)) initreqfuncs)
+                    (RBS.empty (<)) (RBS.empty (<))
                     initreqfuncs
   putStrLn ("\nCompactFlat: Total number of functions (without unused imports): "
             ++ show (foldr (+) 0 (map (length . moduleFuns) finalmods)))
@@ -293,7 +293,7 @@ requiredInCompactProg mainmod options
 
    mainexports = exportedFuncNames (moduleFuns mainmod)
 
-   mainmodset = RBS.insert mainmodname RBS.empty
+   mainmodset = RBS.insert mainmodname $ RBS.empty (<)
 
    add2mainmodset mnames = foldr RBS.insert mainmodset mnames
 
