@@ -238,8 +238,8 @@ extendTConsWithConsType :: RBS.SetRBT QName -> RBS.SetRBT QName -> [TypeDecl]
 extendTConsWithConsType _ tcons [] = tcons
 extendTConsWithConsType cnames tcons (TypeSyn tname _ _ _ : tds) =
   extendTConsWithConsType cnames (RBS.insert tname tcons) tds
-extendTConsWithConsType cnames tcons (TypeNew tname _ _ cdecls : tds) =
-  if any (\cdecl->consName cdecl `RBS.member` cnames) cdecls
+extendTConsWithConsType cnames tcons (TypeNew tname _ _ cdecl : tds) =
+  if newConsName cdecl `RBS.member` cnames
   then extendTConsWithConsType cnames (RBS.insert tname tcons) tds
   else extendTConsWithConsType cnames tcons tds
 extendTConsWithConsType cnames tcons (Type tname _ _ cdecls : tds) =
@@ -453,6 +453,10 @@ functionName (Func name _ _ _ _) = name
 --- Extracts the constructor name of a constructor declaration.
 consName :: ConsDecl -> QName
 consName (Cons name _ _ _) = name
+
+--- Extracts the constructor name of a newtype constructor declaration.
+newConsName :: NewConsDecl -> QName
+newConsName (NewCons name _ _) = name
 
 --- Extracts the type name of a type declaration.
 tconsName :: TypeDecl -> QName
