@@ -163,7 +163,7 @@ ppTypeExpr o p (TCons     qn tys)
                                    (ppPrefixQOp o qn : map (ppTypeExpr o 2) tys)
 ppTypeExpr o p (ForallType vs ty)
   | null vs   = ppTypeExpr o p ty
-  | otherwise = parensIf (p > 0) $ ppQuantifiedVars (map fst vs) <+> ppTypeExpr o 0 ty
+  | otherwise = parensIf (p > 0) $ ppQuantifiedVars vs <+> ppTypeExpr o 0 ty
 
 --- pretty-print explicitly quantified type variables
 ppQuantifiedVars :: [(TVarIndex, Kind)] -> Doc
