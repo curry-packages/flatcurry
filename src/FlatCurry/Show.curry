@@ -193,7 +193,7 @@ showCurryType_ tf nested (TCons tc ts)
     (tf tc ++ concatMap (\t->' ':showCurryType_ tf True t) ts)
 showCurryType_ tf nested (ForallType tvs te) =
   showBracketsIf nested
-    (unwords ("forall" : map (showCurryType_ tf False . TVar) tvs) ++ " . " ++
+    (unwords ("forall" : map (showCurryType_ tf False . TVar . fst) tvs) ++ " . " ++
      showCurryType_ tf False te)
 
 isFuncType :: TypeExpr -> Bool
