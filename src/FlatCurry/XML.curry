@@ -61,6 +61,7 @@ cArity        = aInt    "arity"
 cTypeExpr     = eSeq2   "functype" FuncType cTypeExpr cTypeExpr
               ! eSeq2   "tcons" TCons cQName (rep cTypeExpr)
               ! eSeq1   "tvar" TVar int
+              ! eSeq2   "forall" ForallType cTParams cTypeExpr
 cTVarWithKind = eSeq2   "tvarwithkind" (,) int cKind
 cKind         = eEmpty  "kstar" KStar
               ! eSeq2   "karrow" KArrow cKind cKind
@@ -83,7 +84,7 @@ cExpr         = eSeq1   "var" Var int
               ! eSeq2   "case" cr cExpr (rep cBranch)
               ! eSeq2   "fcase" cf cExpr (rep cBranch)
               ! eSeq2   "letrec" Let (rep cBind) cExpr
-        ! eSeq2 "typed" Typed cExpr cTypeExpr
+              ! eSeq2   "typed" Typed cExpr cTypeExpr
 cLit          = eSeq1   "intc" Intc int
               ! eSeq1   "floatc" Floatc float
               ! eSeq1   "charc" Charc (adapt (chr,ord) int)
