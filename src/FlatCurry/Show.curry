@@ -70,6 +70,7 @@ showFlatCons (Cons cname arity vis types) =
            ++ showFlatVisibility vis
            ++ showFlatList showFlatTypeExpr types ++ ")"
 
+showFlatNewCons :: NewConsDecl -> String
 showFlatNewCons (NewCons cname vis texp) =
   "(NewCons " ++ show cname
               ++ showFlatVisibility vis
