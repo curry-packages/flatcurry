@@ -11,7 +11,7 @@
 ---     Curry syntax (`showCurryType`, `showCurryExpr`,...).
 ---
 --- @author Michael Hanus
---- @version March 2019
+--- @version December 2020
 ------------------------------------------------------------------------------
 
 module FlatCurry.Show
@@ -185,9 +185,14 @@ showCurryType tf nested = showTypeWithClass []
 --- of the context.
 isClassContext :: TypeExpr -> Maybe (String,TypeExpr)
 isClassContext texp = case texp of
-  TCons (_,tc) [a] -> if take 6 tc == "_Dict#" then Just (drop 6 tc, a)
-                                               else Nothing
-  _ -> Nothing
+  TCons (_,tc) [a] -> checkDictCons tc a
+  -- a class context might be represented as function `() -> Dict`:
+  FuncType (TCons unit []) (TCons (_,tc) [a]) | unit == ("Prelude","()")
+                   -> checkDictCons tc a
+  _                -> Nothing
+ where
+  checkDictCons tc a | take 6 tc == "_Dict#" = Just (drop 6 tc, a)
+                     | otherwise             = Nothing
 
 ------------------------------
 
