@@ -21,7 +21,8 @@
         "pakcs": ">= 3.0.0, < 4.0.0",
         "kics2": ">= 3.0.0, < 4.0.0"
     },
-    "exportedModules": [ "FlatCurry.Compact", "FlatCurry.Files",
+    "exportedModules": [ "FlatCurry.Compact", "FlatCurry.ElimNewtype",
+                         "FlatCurry.Files",
                          "FlatCurry.FlexRigid", "FlatCurry.Goodies",
                          "FlatCurry.Pretty", "FlatCurry.Read",
                          "FlatCurry.Show", "FlatCurry.Types",
