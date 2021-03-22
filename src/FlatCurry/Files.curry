@@ -97,7 +97,7 @@ readFlatCurryInt :: String -> IO Prog
 readFlatCurryInt progname = do
   readFlatCurryIntWithParseOptions progname (setQuiet True defaultParams)
 
---- I/O action which parses Curry program
+--- I/O action which parses a Curry program
 --- with respect to some parser options and returns the FlatCurry
 --- interface of this program, i.e.,
 --- a FlatCurry program containing only "Public" entities and function
