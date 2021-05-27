@@ -4,22 +4,22 @@
 --- to read Curry programs and transform them into this representation.
 ---
 --- @author Michael Hanus, Finn Teegen
---- @version July 2020
+--- @version November 2020
 ------------------------------------------------------------------------------
 
 module FlatCurry.Files where
 
-import Directory       (doesFileExist)
-import FileGoodies     (getFileInPath, lookupFileInPath)
-import FilePath        (takeFileName, (</>), (<.>))
-import ReadShowTerm    (readUnqualifiedTerm, showTerm)
-
-import System.CurryPath    ( inCurrySubdir, stripCurrySuffix
+import System.Directory    ( doesFileExist, getFileWithSuffix
+                           , findFileWithSuffix )
+import System.FilePath     ( takeFileName, (</>), (<.>))
+import System.CurryPath    ( inCurrySubdir, stripCurrySuffix, modNameToPath
                            , lookupModuleSourceInLoadPath, getLoadPathForModule
                            )
-import System.FrontendExec ( FrontendParams, FrontendTarget (..), defaultParams
-                           , setQuiet, callFrontendWithParams
+import System.FrontendExec ( FrontendParams(..), FrontendTarget (..)
+                           , defaultParams, setQuiet, callFrontendWithParams
                            )
+import ReadShowTerm        ( readUnqualifiedTerm, showTerm )
+
 
 import FlatCurry.Types
 
@@ -30,7 +30,7 @@ import FlatCurry.Types
 --- program.
 readFlatCurry :: String -> IO Prog
 readFlatCurry progname =
-   readFlatCurryWithParseOptions progname (setQuiet True defaultParams)
+  readFlatCurryWithParseOptions progname (setQuiet True defaultParams)
 
 --- I/O action which parses a Curry program
 --- with respect to some parser options and returns the
@@ -44,12 +44,15 @@ readFlatCurryWithParseOptions progname options = do
   case mbsrc of
     Nothing -> do -- no source file, try to find FlatCurry file in load path:
       loadpath <- getLoadPathForModule progname
-      filename <- getFileInPath (flatCurryFileName (takeFileName progname)) [""]
-                                loadpath
+      filename <- getFileWithSuffix 
+                     (flatCurryFileName (takeFileName progname)) [""]
+                     loadpath
       readFlatCurryFile filename
     Just (dir,_) -> do
       callFrontendWithParams FCY options progname
-      readFlatCurryFile (flatCurryFileName (dir </> takeFileName progname))
+      let fcyfile = dir </> outdir options </>
+                    modNameToPath (takeFileName progname) <.> "fcy"
+      readFlatCurryFile fcyfile
 
 --- Transforms a name of a Curry program (with or without suffix ".curry"
 --- or ".lcurry") into the name of the file containing the
@@ -72,17 +75,17 @@ readFlatCurryFile :: String -> IO Prog
 readFlatCurryFile filename = do
   exfcy <- doesFileExist filename
   if exfcy
-   then readExistingFCY filename
-   else do let subdirfilename = inCurrySubdir filename
-           exdirfcy <- doesFileExist subdirfilename
-           if exdirfcy
-            then readExistingFCY subdirfilename
-            else error ("EXISTENCE ERROR: FlatCurry file '" ++ filename ++
-                        "' does not exist")
+    then readExistingFCY filename
+    else do let subdirfilename = inCurrySubdir filename
+            exdirfcy <- doesFileExist subdirfilename
+            if exdirfcy
+              then readExistingFCY subdirfilename
+              else error ("EXISTENCE ERROR: FlatCurry file '" ++ filename ++
+                          "' does not exist")
  where
-   readExistingFCY fname = do
-     filecontents <- readFile fname
-     return (readUnqualifiedTerm ["FlatCurry.Types","Prelude"] filecontents)
+  readExistingFCY fname = do
+    filecontents <- readFile fname
+    return (readUnqualifiedTerm ["FlatCurry.Types","Prelude"] filecontents)
 
 --- I/O action which returns the interface of a Curry module, i.e.,
 --- a FlatCurry program containing only "Public" entities and function
@@ -92,9 +95,9 @@ readFlatCurryFile filename = do
 --- interface of this module.
 readFlatCurryInt :: String -> IO Prog
 readFlatCurryInt progname = do
-   readFlatCurryIntWithParseOptions progname (setQuiet True defaultParams)
+  readFlatCurryIntWithParseOptions progname (setQuiet True defaultParams)
 
---- I/O action which parses Curry program
+--- I/O action which parses a Curry program
 --- with respect to some parser options and returns the FlatCurry
 --- interface of this program, i.e.,
 --- a FlatCurry program containing only "Public" entities and function
@@ -108,12 +111,15 @@ readFlatCurryIntWithParseOptions progname options = do
   case mbsrc of
     Nothing -> do -- no source file, try to find FlatCurry file in load path:
       loadpath <- getLoadPathForModule progname
-      filename <- getFileInPath (flatCurryIntName (takeFileName progname)) [""]
-                                loadpath
+      filename <- getFileWithSuffix
+                    (flatCurryIntName (takeFileName progname)) [""]
+                    loadpath
       readFlatCurryFile filename
     Just (dir,_) -> do
       callFrontendWithParams FINT options progname
-      readFlatCurryFile (flatCurryIntName (dir </> takeFileName progname))
+      let fintfile = dir </> outdir options </>
+                     modNameToPath (takeFileName progname) <.> "fint"
+      readFlatCurryFile fintfile
 
 --- Writes a FlatCurry program into a file in `.fcy` format.
 --- The file is written in the standard location for intermediate files,
@@ -144,11 +150,11 @@ writeFCY = writeFlatCurryFile
 lookupFlatCurryFileInLoadPath :: String -> IO (Maybe String)
 lookupFlatCurryFileInLoadPath modname =
   getLoadPathForModule modname >>=
-  lookupFileInPath (flatCurryFileName modname) [""]
+  findFileWithSuffix (flatCurryFileName modname) [""]
 
 --- Returns the name of the FlatCurry file of a module in the load path,
 --- if this file exists.
 getFlatCurryFileInLoadPath :: String -> IO String
 getFlatCurryFileInLoadPath modname =
   getLoadPathForModule modname >>=
-  getFileInPath (flatCurryFileName modname) [""]
+  getFileWithSuffix (flatCurryFileName modname) [""]

@@ -4,26 +4,26 @@
 --- in a Curry-like syntax.
 ---
 --- This library contains
---- 
+---
 ---   * show functions for a string representation of FlatCurry programs
 ---     (`showFlatProg`, `showFlatType`, `showFlatFunc`)
 ---   * functions for showing FlatCurry (type) expressions in (almost)
 ---     Curry syntax (`showCurryType`, `showCurryExpr`,...).
 ---
 --- @author Michael Hanus
---- @version March 2019
+--- @version December 2020
 ------------------------------------------------------------------------------
 
-{-# OPTIONS_CYMAKE -Wno-incomplete-patterns #-}
-
-module FlatCurry.Show(showFlatProg,showFlatType,showFlatFunc,
-                      showCurryType,isClassContext,
-                      showCurryExpr,showCurryId,showCurryVar)
-   where
+module FlatCurry.Show
+  (showFlatProg, showFlatType, showFlatFunc
+  , showCurryType, isClassContext
+  , showCurryExpr, showCurryId, showCurryVar
+  )
+ where
 
 import FlatCurry.Types
-import List
-import Char
+import Data.List
+import Data.Char
 
 --- Shows a FlatCurry program term as a string (with some pretty printing).
 showFlatProg :: Prog -> String
@@ -59,12 +59,22 @@ showFlatType (TypeSyn name vis tpars texp) =
   "\n  (TypeSyn " ++ show name ++ showFlatVisibility vis
                   ++ showFlatList show tpars
                   ++ showFlatTypeExpr texp ++ ")"
+showFlatType (TypeNew name vis tpars consdecl) =
+  "\n  (TypeNew " ++ show name ++ showFlatVisibility vis
+                  ++ showFlatList show tpars
+                  ++ showFlatNewCons consdecl ++ ")"
 
 showFlatCons :: ConsDecl -> String
 showFlatCons (Cons cname arity vis types) =
   "(Cons " ++ show cname ++ " " ++ show arity
            ++ showFlatVisibility vis
            ++ showFlatList showFlatTypeExpr types ++ ")"
+
+showFlatNewCons :: NewConsDecl -> String
+showFlatNewCons (NewCons cname vis texp) =
+  "(NewCons " ++ show cname
+              ++ showFlatVisibility vis
+              ++ showFlatTypeExpr texp ++ ")"
 
 showFlatFunc :: FuncDecl -> String
 showFlatFunc (Func name arity vis ftype rl) =
@@ -150,22 +160,39 @@ showFlatListElems format elems = intercalate "," (map format elems)
 --- @return the String representation of the formatted type expression
 
 showCurryType :: (QName -> String) -> Bool -> TypeExpr -> String
-showCurryType tf nested texp = case texp of
-  FuncType t1 t2 -> maybe (showCurryType_ tf nested texp)
-                          (\ (cn,cv) -> showBracketsIf nested $
-                                cn ++ " " ++ showCurryType_ tf True cv ++
-                                " => " ++ showCurryType tf False t2)
-                          (isClassContext t1)
-  _              -> showCurryType_ tf nested texp
+showCurryType tf nested = showTypeWithClass []
+ where
+  showTypeWithClass cls texp = case texp of
+    ForallType _ te -> showTypeWithClass cls te -- strip forall quantifiers
+    FuncType t1 t2  -> maybe (showClassedType cls texp)
+                             (\ (cn,cv) ->
+                                  showTypeWithClass (cls ++ [(cn,cv)]) t2)
+                             (isClassContext t1)
+    _               -> showClassedType cls texp
+
+  showClassedType cls texp
+   | null cls
+   = showCurryType_ tf nested texp
+   | otherwise
+   = showBracketsIf nested $
+       showBracketsIf (length cls > 1)
+         (intercalate ", "
+            (map (\ (cn,cv) -> cn ++ " " ++ showCurryType_ tf True cv) cls)) ++
+         " => " ++ showCurryType_ tf False texp
 
 --- Tests whether a FlatCurry type is a class context.
 --- If it is the case, return the class name and the type parameter
 --- of the context.
 isClassContext :: TypeExpr -> Maybe (String,TypeExpr)
 isClassContext texp = case texp of
-  TCons (_,tc) [a] -> if take 6 tc == "_Dict#" then Just (drop 6 tc, a)
-                                               else Nothing
-  _ -> Nothing
+  TCons (_,tc) [a] -> checkDictCons tc a
+  -- a class context might be represented as function `() -> Dict`:
+  FuncType (TCons unit []) (TCons (_,tc) [a]) | unit == ("Prelude","()")
+                   -> checkDictCons tc a
+  _                -> Nothing
+ where
+  checkDictCons tc a | take 6 tc == "_Dict#" = Just (drop 6 tc, a)
+                     | otherwise             = Nothing
 
 ------------------------------
 
@@ -188,7 +215,7 @@ showCurryType_ tf nested (TCons tc ts)
     (tf tc ++ concatMap (\t->' ':showCurryType_ tf True t) ts)
 showCurryType_ tf nested (ForallType tvs te) =
   showBracketsIf nested
-    (unwords ("forall" : map (showCurryType_ tf False . TVar) tvs) ++ " . " ++
+    (unwords ("forall" : map (showCurryType_ tf False . TVar . fst) tvs) ++ " . " ++
      showCurryType_ tf False te)
 
 isFuncType :: TypeExpr -> Bool
@@ -321,27 +348,30 @@ showCurryCase tf b (Branch (LPattern l) e) =
               ++ " -> " ++ showCurryExpr tf False b e ++ "\n"
 
 showCurryFiniteList :: (QName -> String) -> Int -> Expr -> [String]
-showCurryFiniteList _  _ (Comb _ ("Prelude","[]") []) = []
-showCurryFiniteList tf b (Comb _ ("Prelude",":") [e1,e2]) =
-  showCurryExpr tf False b e1 : showCurryFiniteList tf b e2
+showCurryFiniteList tf b exp = case exp of
+  Comb _ ("Prelude","[]") []     -> []
+  Comb _ ("Prelude",":") [e1,e2] ->
+    showCurryExpr tf False b e1 : showCurryFiniteList tf b e2
+  _ -> error "Internal error in FlatCurry.Show.showCurryFiniteList"
 
 -- show a string constant
 showCurryStringConstant :: Expr -> String
-showCurryStringConstant (Comb _ ("Prelude","[]") []) = []
-showCurryStringConstant (Comb _ ("Prelude",":") [e1,e2]) =
-   showCharExpr e1 ++ showCurryStringConstant e2
-
-showCharExpr :: Expr -> String
-showCharExpr (Lit (Charc c))
-  | c=='"'  = "\\\""
-  | c=='\'' = "\\\'"
-  | c=='\n' = "\\n"
-  | o < 32 || o > 126 =
-    ['\\', chr (o `div` 100 + 48), chr (((o `mod` 100) `div` 10 + 48)),
-           chr(o `mod` 10 + 48)]
-  | otherwise = [c]
+showCurryStringConstant exp = case exp of
+  Comb _ ("Prelude","[]") []                 -> []
+  Comb _ ("Prelude",":") [Lit (Charc c), e2] ->
+    showChar c ++ showCurryStringConstant e2
+  _ -> error "Internal error in FlatCurry.Show.showCurryStringConstant"
  where
-   o = ord c
+  showChar c
+    | c=='"'  = "\\\""
+    | c=='\'' = "\\\'"
+    | c=='\n' = "\\n"
+    | o < 32 || o > 126
+    = ['\\', chr (o `div` 100 + 48), chr (((o `mod` 100) `div` 10 + 48)),
+             chr(o `mod` 10 + 48)]
+    | otherwise = [c]
+   where
+     o = ord c
 
 showCurryElems :: (a -> String) -> [a] -> String
 showCurryElems format elems = intercalate " " (map format elems)

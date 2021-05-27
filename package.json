@@ -1,25 +1,26 @@
 {
     "name": "flatcurry",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "author": "Michael Hanus <mh@informatik.uni-kiel.de>",
     "synopsis": "Libraries to deal with FlatCurry programs",
     "category": [ "Metaprogramming" ],
     "license": "BSD-3-Clause",
     "licenseFile": "LICENSE",
     "dependencies": {
-        "base"          : ">= 1.0.0, < 2.0.0",
-        "currypath"     : ">= 0.0.1",
-        "frontend-exec" : ">= 0.0.1",
-        "redblacktree"  : ">= 0.0.1",
-        "wl-pprint"     : ">= 0.0.1",
-        "xml"           : ">= 2.0.0"
+        "base"          : ">= 3.0.0, < 4.0.0",
+        "currypath"     : ">= 3.0.0, < 4.0.0",
+        "directory"     : ">= 3.0.0, < 4.0.0",
+        "filepath"      : ">= 3.0.0, < 4.0.0",
+        "frontend-exec" : ">= 3.0.0, < 4.0.0",
+        "read-legacy"   : ">= 3.0.0, < 4.0.0",
+        "redblacktree"  : ">= 3.0.0, < 4.0.0",
+        "transformers"  : ">= 3.0.0, < 4.0.0",
+        "wl-pprint"     : ">= 3.0.0, < 4.0.0",
+        "xml"           : ">= 3.0.0, < 4.0.0"
     },
-    "compilerCompatibility": {
-        "pakcs": ">= 2.0.0",
-        "kics2": ">= 2.0.0"
-    },
-    "exportedModules": [ "FlatCurry.Compact", "FlatCurry.Files",
-                         "FlatCurry.FlexRigid", "FlatCurry.Goodies",
+    "exportedModules": [ "FlatCurry.Compact", "FlatCurry.ElimNewtype",
+                         "FlatCurry.Files", "FlatCurry.FlexRigid",
+                         "FlatCurry.Goodies", "FlatCurry.Normalize",
                          "FlatCurry.Pretty", "FlatCurry.Read",
                          "FlatCurry.Show", "FlatCurry.Types",
                          "FlatCurry.XML" ],
@@ -29,6 +30,7 @@
     },
     "testsuite": {
         "src-dir": "test",
-        "modules": [  "TestFlatCurryGoodies", "TestFlatCurryXML" ]
+        "modules": [ "TestFlatCurryGoodies", "TestFlatCurryXML"
+                   , "TestNormalize" ]
     }
 }

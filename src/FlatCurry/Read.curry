@@ -3,7 +3,7 @@
 --- together with all its imported modules in the current load path.
 ---
 --- @author Michael Hanus, Bjoern Peemoeller, Finn Teegen
---- @version December 2018
+--- @version November 2020
 ------------------------------------------------------------------------------
 
 module FlatCurry.Read
@@ -14,10 +14,10 @@ module FlatCurry.Read
   , readFlatCurryIntWithImportsInPath
   ) where
 
-import Directory    ( getModificationTime )
-import FileGoodies  ( baseName, lookupFileInPath, stripSuffix )
-import FilePath     ( normalise )
-
+import Control.Monad       ( when )
+import System.Directory    ( getModificationTime, getFileWithSuffix
+                           , findFileWithSuffix )
+import System.FilePath     ( dropExtension, normalise, takeFileName )
 import System.CurryPath    ( getLoadPathForModule, lookupModuleSource )
 import System.FrontendExec ( FrontendTarget (FCY), callFrontendWithParams
                            , defaultParams, setQuiet, setFullPath )
@@ -38,7 +38,7 @@ readFlatCurryInPath loadpath modname = do
 readFlatCurryWithImports :: String -> IO [Prog]
 readFlatCurryWithImports modname = do
   loadpath <- getLoadPathForModule modname
-  readFlatCurryFileInPath True False loadpath (baseName modname) [".fcy"]
+  readFlatCurryFileInPath True False loadpath (takeFileName modname) [".fcy"]
 
 --- Reads a FlatCurry program together with all its imported modules
 --- in a given load path.
@@ -56,11 +56,11 @@ readFlatCurryWithImportsInPath loadpath modname =
 readFlatCurryIntWithImports :: String -> IO [Prog]
 readFlatCurryIntWithImports modname = do
   loadpath <- getLoadPathForModule modname
-  readFlatCurryFileInPath True False loadpath (baseName modname)
+  readFlatCurryFileInPath True False loadpath (takeFileName modname)
                                      [".fint",".fcy"]
 
---- Reads a FlatCurry interface together with all its imported module interfaces
---- in a given load path.
+--- Reads a FlatCurry interface together with all its imported module
+--- interfaces in a given load path.
 --- The arguments are a load path and the name of the main module.
 --- If there is no interface file but a FlatCurry file (suffix ".fcy"),
 --- the FlatCurry file is read instead of the interface.
@@ -140,10 +140,10 @@ tryReadFlatCurry :: Bool -> [String] -> String -> [String] -> IO (Maybe Prog)
 tryReadFlatCurry verb loadpath modname suffixes = do
   mbSrc <- lookupModuleSource loadpath modname
   case mbSrc of
-    Nothing -> lookupFileInPath flatbasename suffixes loadpath >>=
-               maybe (return Nothing) (liftIO Just  . readFlatCurryFile)
+    Nothing -> findFileWithSuffix flattakeBaseName suffixes loadpath >>=
+               maybe (return Nothing) (fmap Just  . readFlatCurryFile)
     Just (_,src) -> do
-      mbFcy <- lookupFileInPath flatbasename suffixes loadpath
+      mbFcy <- findFileWithSuffix flattakeBaseName suffixes loadpath
       case mbFcy of
         Nothing  -> return Nothing
         Just fcy -> do
@@ -153,5 +153,5 @@ tryReadFlatCurry verb loadpath modname suffixes = do
             then return Nothing
             else do
               when verb $ putStr (normalise fcy ++ " ")
-              Just `liftIO` readFlatCurryFile fcy
- where flatbasename = stripSuffix (flatCurryFileName modname)
+              fmap Just (readFlatCurryFile fcy)
+ where flattakeBaseName = dropExtension (flatCurryFileName modname)
