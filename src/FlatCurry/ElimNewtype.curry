@@ -44,9 +44,11 @@ elimNewtypeInProg prog = do
 --- Eliminates all `newtype` definitions/uses in a FlatCurry program.
 --- The first argument are the interfaces of the imported modules.
 elimNewtype :: [Prog] -> Prog -> Prog
-elimNewtype impprogs (Prog mname imps tdecls fdecls ops) =
-  Prog mname imps (map replaceNewtypeDecl tdecls)
-       (map (elimNewtypeInFunc nti) fdecls) ops
+elimNewtype impprogs prog@(Prog mname imps tdecls fdecls ops) =
+  if null nti
+    then prog
+    else Prog mname imps (map replaceNewtypeDecl tdecls)
+              (map (elimNewtypeInFunc nti) fdecls) ops
  where
   nti = newtypesOfProg (tdecls ++ concatMap progTypes impprogs)
 
