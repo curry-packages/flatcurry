@@ -89,7 +89,7 @@ elimNewtypeInFunc nti fd@(Func qf ar vis ftype (Rule args rhs)) =
     ConsCall       | length es == 1 && isNewCons qn
       -> head es
     ConsPartCall 1 | null es && isNewCons qn
-      -> Comb ct ("Prelude","id") []
+      -> Comb (FuncPartCall 1) ("Prelude","id") []
     _ -> Comb ct qn es
 
   elimCase ct ce bs = case bs of
