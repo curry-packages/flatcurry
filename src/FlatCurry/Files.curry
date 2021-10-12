@@ -1,7 +1,6 @@
 ------------------------------------------------------------------------------
---- This library supports meta-programming, i.e., the manipulation of
---- Curry programs in Curry. This library defines I/O actions
---- to read Curry programs and transform them into this representation.
+--- This library defines I/O actions to read Curry programs and
+--- transform them into the FlatCurry representation.
 ---
 --- @author Michael Hanus, Finn Teegen
 --- @version October 2021
@@ -28,9 +27,18 @@ import FlatCurry.Types
 
 --- I/O action which parses a Curry module and returns the corresponding
 --- FlatCurry program.
---- Thus, the argument is the module name (without suffix ".curry"
+--- The argument is the module name (without suffix ".curry"
 --- or ".lcurry") and the result is a FlatCurry term representing this
 --- module.
+---
+--- If one wants to parse a Curry module in another directory,
+--- e.g., the file `examples/Mod.curry`, one can use the operation
+--- `runModuleAction` from module `System.CurryPath` of package `currypath`
+--- to transform this I/O action so that it switches into the directory
+--- before reading:
+---
+---     > runModuleAction readFlatCurry examples/Mod.curry
+---
 readFlatCurry :: String -> IO Prog
 readFlatCurry modname =
   readFlatCurryWithParseOptions modname (setQuiet True defaultParams)
@@ -38,6 +46,10 @@ readFlatCurry modname =
 --- I/O action which parses a Curry module
 --- with respect to some parser options and returns the
 --- corresponding FlatCurry program.
+--- The argument is the module name (without suffix ".curry"
+--- or ".lcurry") and the result is a FlatCurry term representing this
+--- module.
+---
 --- @param modname - the module name (without suffix ".curry")
 --- @param options - parameters passed to the front end
 readFlatCurryWithParseOptions :: String -> FrontendParams -> IO Prog
@@ -94,9 +106,18 @@ readFlatCurryFile filename = do
 --- I/O action which returns the interface of a Curry module, i.e.,
 --- a FlatCurry program containing only "Public" entities and function
 --- definitions without rules (i.e., external functions).
---- The argument is the file name without suffix ".curry"
---- (or ".lcurry") and the result is a FlatCurry term representing the
+--- The argument is the module name (without suffix ".curry"
+--- or ".lcurry") and the result is a FlatCurry term representing the
 --- interface of this module.
+---
+--- If one wants to parse a Curry module in another directory,
+--- e.g., the file `examples/Mod.curry`, one can use the operation
+--- `runModuleAction` from module `System.CurryPath` of package `currypath`
+--- to transform this I/O action so that it switches into the directory
+--- before reading:
+---
+---     > runModuleAction readFlatCurryInt examples/Mod.curry
+---
 readFlatCurryInt :: String -> IO Prog
 readFlatCurryInt modname = do
   readFlatCurryIntWithParseOptions modname (setQuiet True defaultParams)
@@ -106,7 +127,7 @@ readFlatCurryInt modname = do
 --- interface of this program, i.e.,
 --- a FlatCurry program containing only "Public" entities and function
 --- definitions without rules (i.e., external functions).
---- The argument is the file name without suffix ".curry"
+--- The argument is the module name without suffix ".curry"
 --- (or ".lcurry") and the result is a FlatCurry term representing the
 --- interface of this module.
 readFlatCurryIntWithParseOptions :: String -> FrontendParams -> IO Prog
