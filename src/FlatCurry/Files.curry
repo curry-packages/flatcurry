@@ -3,7 +3,7 @@
 --- transform them into the FlatCurry representation.
 ---
 --- @author Michael Hanus, Finn Teegen
---- @version October 2021
+--- @version November 2023
 ------------------------------------------------------------------------------
 {-# LANGUAGE CPP #-}
 
@@ -83,10 +83,10 @@ flatCurryFileName prog = inCurrySubdir (stripCurrySuffix prog) <.> "fcy"
 flatCurryIntName :: String -> String
 flatCurryIntName prog = inCurrySubdir (stripCurrySuffix prog) <.> "fint"
 
---- I/O action which reads a FlatCurry program from a file in ".fcy" format.
+--- I/O action which reads a FlatCurry program from a file in `.fcy` format.
 --- In contrast to `readFlatCurry`, this action does not parse
 --- a source program. Thus, the argument must be the name of an existing
---- file (with suffix ".fcy") containing a FlatCurry program in ".fcy"
+--- file (with suffix `.fcy`) containing a FlatCurry program in `.fcy`
 --- format and the result is a FlatCurry term representing this program.
 readFlatCurryFile :: String -> IO Prog
 readFlatCurryFile filename = do
@@ -121,7 +121,7 @@ readFlatCurryFile filename = do
 --- to transform this I/O action so that it switches into the directory
 --- before reading:
 ---
----     > runModuleAction readFlatCurryInt examples/Mod.curry
+---     > runModuleAction readFlatCurryInt "examples/Mod.curry"
 ---
 readFlatCurryInt :: String -> IO Prog
 readFlatCurryInt modname = do
@@ -165,9 +165,9 @@ writeFlatCurry prog@(Prog mname _ _ _ _) = do
                             "' not found!"
     Just (dir,_) -> writeFlatCurryFile (flatCurryFileName (dir </> mname)) prog
 
---- Writes a FlatCurry program into a file in ".fcy" format.
+--- Writes a FlatCurry program into a file in `.fcy` format.
 --- The first argument must be the name of the target file
---- (usually with suffix ".fcy").
+--- (usually with suffix `.fcy`).
 writeFlatCurryFile :: String -> Prog -> IO ()
 writeFlatCurryFile file prog =
 #ifdef  __KMCC__
@@ -176,9 +176,9 @@ writeFlatCurryFile file prog =
   writeFile file (showTerm prog)
 #endif
 
---- Writes a FlatCurry program into a file in ".fcy" format.
+--- Writes a FlatCurry program into a file in `.fcy` format.
 --- The first argument must be the name of the target file
---- (usually with suffix ".fcy").
+--- (usually with suffix `.fcy`).
 writeFCY :: String -> Prog -> IO ()
 writeFCY = writeFlatCurryFile
 
