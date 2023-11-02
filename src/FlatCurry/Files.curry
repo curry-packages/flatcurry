@@ -5,6 +5,7 @@
 --- @author Michael Hanus, Finn Teegen
 --- @version October 2021
 ------------------------------------------------------------------------------
+{-# LANGUAGE CPP #-}
 
 module FlatCurry.Files where
 
@@ -101,7 +102,11 @@ readFlatCurryFile filename = do
  where
   readExistingFCY fname = do
     filecontents <- readFile fname
+#ifdef  __KMCC__
+    return (read filecontents)
+#else
     return (readUnqualifiedTerm ["FlatCurry.Types","Prelude"] filecontents)
+#endif
 
 --- I/O action which returns the interface of a Curry module, i.e.,
 --- a FlatCurry program containing only "Public" entities and function
@@ -164,7 +169,12 @@ writeFlatCurry prog@(Prog mname _ _ _ _) = do
 --- The first argument must be the name of the target file
 --- (usually with suffix ".fcy").
 writeFlatCurryFile :: String -> Prog -> IO ()
-writeFlatCurryFile file prog = writeFile file (showTerm prog)
+writeFlatCurryFile file prog =
+#ifdef  __KMCC__
+  writeFile file (show prog)
+#else
+  writeFile file (showTerm prog)
+#endif
 
 --- Writes a FlatCurry program into a file in ".fcy" format.
 --- The first argument must be the name of the target file
