@@ -1,5 +1,5 @@
-flatcurry
-=========
+FlatCurry: An intermediate language for Curry programs
+======================================================
 
 This package contains libraries to deal with *FlatCurry programs*.
 FlatCurry is an intermediate language to represent Curry programs
