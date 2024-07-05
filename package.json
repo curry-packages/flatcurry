@@ -12,6 +12,7 @@
         "directory"     : ">= 3.0.0, < 4.0.0",
         "filepath"      : ">= 3.0.0, < 4.0.0",
         "frontend-exec" : ">= 3.0.0, < 4.0.0",
+        "profiling"     : ">= 3.0.0, < 4.0.0",
         "read-legacy"   : ">= 3.0.0, < 4.0.0",
         "redblacktree"  : ">= 3.0.0, < 4.0.0",
         "rw-data"       : ">= 1.0.0",
