@@ -6,6 +6,7 @@
 ---
 --- @version July 2024
 ------------------------------------------------------------------------------
+{-# OPTIONS_FRONTEND -Wno-incomplete-patterns -Wno-unused-bindings #-}
 
 module FlatCurry.TypesRW where
 
