@@ -11,7 +11,7 @@
 ---     Curry syntax (`showCurryType`, `showCurryExpr`,...).
 ---
 --- @author Michael Hanus
---- @version December 2020
+--- @version September 2024
 ------------------------------------------------------------------------------
 
 module FlatCurry.Show
