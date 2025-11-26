@@ -21,6 +21,12 @@
         "wl-pprint"     : ">= 3.0.0, < 4.0.0",
         "xml"           : ">= 3.0.0, < 4.0.0"
     },
+    "compilerCompatibility": {
+        "pakcs"   : "<= 3.9.0",
+        "kics2"   : "<= 3.4.0",
+        "curry2go": "<= 1.6.0",
+        "kmcc"    : "<= 0.4.0"
+    },
     "exportedModules": [ "FlatCurry.Compact", "FlatCurry.ElimNewtype",
                          "FlatCurry.Files", "FlatCurry.FlexRigid",
                          "FlatCurry.Goodies", "FlatCurry.Normalize",
