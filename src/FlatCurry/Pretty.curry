@@ -1,6 +1,6 @@
 --- --------------------------------------------------------------------------
 -- | Author : Bjoern Peemoeller
----  Version: November 2020
+---  Version: November 2025
 --
 -- This library provides pretty-printers for FlatCurry modules
 -- and all substructures (e.g., expressions).
@@ -54,10 +54,15 @@ defaultOptions = Options
   }
 
 -- ---------------------------------------------------------------------------
--- Pretty printing of Flat modules
+-- Pretty printing of FlatCurry modules
 -- ---------------------------------------------------------------------------
 
--- | pretty-print a FlatCurry module
+-- | Shows a FlatCurry module in pretty-printed form with default options
+--   for pretty-printing.
+showPrettyProg :: Prog -> String
+showPrettyProg = pPrint . ppProg defaultOptions
+
+-- | Pretty-print a FlatCurry module
 ppProg :: Options -> Prog -> Doc
 ppProg o (Prog m is ts fs os) = vsepBlank
   [ ppHeader    o' m ts fs
@@ -68,7 +73,7 @@ ppProg o (Prog m is ts fs os) = vsepBlank
   ]
   where o' = o { currentModule = m }
 
--- | pretty-print the module header
+-- | Pretty-print the module header
 ppHeader :: Options -> String -> [TypeDecl] -> [FuncDecl] -> Doc
 ppHeader o m ts fs = indent o $
   sep [text "module" <+> text m, ppExports o ts fs, text "where"]
@@ -209,7 +214,8 @@ ppExpr o p (Free    vs e)
   | null vs               = ppExpr o p e
   | otherwise             = parensIf (p > 0) $ sep
                             [ text "let"
-                              <+> sep (punctuate comma (map ppVarIndex vs))
+                              <+> sep (punctuate comma
+                                         (map (ppVarIndex . fst) vs))
                               <+> text "free"
                             , text "in" </> ppExp o e
                             ]
@@ -249,13 +255,13 @@ ppComb o p qn es | isListId  qn && null es = text "[]"
   _                -> parensIf (p > 0)
                     $ fillSep (ppPrefixQOp o qn : map (ppExpr o 1) es)
 
--- | pretty-print a list of declarations
-ppDecls :: Options -> [(VarIndex, Expr)] -> Doc
+-- | pretty-print a list of local declarations
+ppDecls :: Options -> [(VarIndex, TypeExpr, Expr)] -> Doc
 ppDecls o = align . vsep . map (ppDecl o)
 
--- | pretty-print a single declaration
-ppDecl :: Options -> (VarIndex, Expr) -> Doc
-ppDecl o (v, e) = ppVarIndex v <+> equals <+> ppExp o e
+-- | pretty-print a single local declaration
+ppDecl :: Options -> (VarIndex, TypeExpr, Expr) -> Doc
+ppDecl o (v, _, e) = ppVarIndex v <+> equals <+> ppExp o e
 
 -- | Pretty print the type of a case expression
 ppCaseType :: CaseType -> Doc

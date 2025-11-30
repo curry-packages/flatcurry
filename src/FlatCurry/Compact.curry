@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --- | Author : Michael Hanus, Carsten Heine
----   Version: September 2021
+---   Version: November 2025
 --
 -- This module contains functions to reduce the size of FlatCurry programs
 -- by combining the main module and all imports into a single program
@@ -383,7 +383,7 @@ allFuncCallsOfExpr (Comb ctype fname exprs) = case ctype of
 allFuncCallsOfExpr (Free _ expr) =
     allFuncCallsOfExpr expr
 allFuncCallsOfExpr (Let bs expr) =
-    concatMap (allFuncCallsOfExpr . snd) bs ++ allFuncCallsOfExpr expr
+    concatMap (allFuncCallsOfExpr . trd3) bs ++ allFuncCallsOfExpr expr
 allFuncCallsOfExpr (Or expr1 expr2) =
     allFuncCallsOfExpr expr1 ++ allFuncCallsOfExpr expr2
 allFuncCallsOfExpr (Case _ expr branchExprs) =
@@ -418,7 +418,7 @@ allConsOfExpr (Comb ctype cname exprs) = case ctype of
 allConsOfExpr (Free _ expr) =
    allConsOfExpr expr
 allConsOfExpr (Let bs expr) =
-   union (unionMap (allConsOfExpr . snd) bs) (allConsOfExpr expr)
+   union (unionMap (allConsOfExpr . trd3) bs) (allConsOfExpr expr)
 allConsOfExpr (Or expr1 expr2) =
    union (allConsOfExpr expr1) (allConsOfExpr expr2)
 allConsOfExpr (Case _ expr branchExprs) =
@@ -569,5 +569,8 @@ xml2primtrans mod xe = case xe of
      XElem "ignore" (("name",fname):_) [] -> ((mod,fname), ("",""))
      _ -> error $ "FlatCurry.Compact.xml2prim: unexpected document\n" ++
                   showXmlDoc xelem
+
+trd3 :: (a, b, c) -> c
+trd3 (_, _, z) = z
 
 -------------------------------------------------------------------------------

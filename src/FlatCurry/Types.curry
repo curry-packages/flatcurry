@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 -- | Author : Michael Hanus
---   Version: July 2016
+--   Version: November 2025
 --
 -- This library supports meta-programming, i.e., the manipulation of
 -- Curry programs in Curry. For this purpose, the library contains
@@ -216,9 +216,9 @@ data Expr
   | Comb CombType QName [Expr]
   -- ^ application `(f e1 ... en)` of a function or constructor `f`
   --  with `n`&lt;=arity(`f`)
-  | Let [(VarIndex, Expr)] Expr
+  | Let [(VarIndex, TypeExpr,Expr)] Expr
   -- ^ introduction of local variables via (recursive) let declarations
-  | Free [VarIndex] Expr
+  | Free [(VarIndex,TypeExpr)] Expr
   -- ^ introduction of free local variables
   | Or Expr Expr
   -- ^ disjunction of two expressions (used to translate rules with
@@ -258,7 +258,23 @@ data Literal
   | Charc  Char  -- ^ a character literal
  deriving (Eq, Ord, Read, Show)
 
------------------------------------------------------------------------
+------------------------------------------------------------------------------
+-- | The bound variable of a single let binding.
+varOfLetBind :: (VarIndex, TypeExpr,Expr) -> VarIndex
+varOfLetBind (v,_,_) = v
+
+-- | The list of all bound variables of a let binding.
+varsOfLetBind :: [(VarIndex, TypeExpr,Expr)] -> [VarIndex]
+varsOfLetBind = map varOfLetBind
+
+-- | The bound expression of a single let binding.
+expOfLetBind :: (VarIndex, TypeExpr,Expr) -> Expr
+expOfLetBind (_,_,be) = be
+
+-- | The list of all bound expressions of a let binding.
+expsOfLetBind :: [(VarIndex, TypeExpr,Expr)] -> [Expr]
+expsOfLetBind = map expOfLetBind
+
 -- | Shows a qualified type name as a name relative to a module
 --   (first argument). Thus, names not defined in this module (except for names
 --   defined in the prelude) are prefixed with their module name.
@@ -271,4 +287,8 @@ showQNameInModule mname qn@(qmod, name)
 showQName :: QName -> String
 showQName (qmod, name) = qmod ++ '.' : name
 
------------------------------------------------------------------------
+-- | Transforms a name into Prelude-qualified name.
+pre :: String -> QName
+pre f = ("Prelude",f)
+
+------------------------------------------------------------------------------
