@@ -216,7 +216,7 @@ data Expr
   | Comb CombType QName [Expr]
   -- ^ application `(f e1 ... en)` of a function or constructor `f`
   --  with `n`&lt;=arity(`f`)
-  | Let [(VarIndex, TypeExpr,Expr)] Expr
+  | Let [(VarIndex,TypeExpr,Expr)] Expr
   -- ^ introduction of local variables via (recursive) let declarations
   | Free [(VarIndex,TypeExpr)] Expr
   -- ^ introduction of free local variables
@@ -272,7 +272,7 @@ expOfLetBind :: (VarIndex, TypeExpr,Expr) -> Expr
 expOfLetBind (_,_,be) = be
 
 -- | The list of all bound expressions of a let binding.
-expsOfLetBind :: [(VarIndex, TypeExpr,Expr)] -> [Expr]
+expsOfLetBind :: [(VarIndex,TypeExpr,Expr)] -> [Expr]
 expsOfLetBind = map expOfLetBind
 
 -- | Shows a qualified type name as a name relative to a module

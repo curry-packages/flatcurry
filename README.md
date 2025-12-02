@@ -55,10 +55,6 @@ Modules of the package
 
 Currently, this package contains the following modules:
 
-* `FlatCurry.Compact`: This module contains operations to reduce the size
-  of FlatCurry programs by combining the main module and all imports
-  into a single program that contains only the operations directly or
-  indirectly called from a set of main operations.
 * `FlatCurry.Files`: This module defines operations to read and write
   FlatCurry programs.
 * `FlatCurry.FlexRigid`: provides an operation to compute the rigid/flex status
@@ -79,10 +75,3 @@ Currently, this package contains the following modules:
   FlatCurry format or in a Curry-like syntax.
 * `FlatCurry.Types`: This module defines the data types to represent
   FlatCurry programs in Curry.
-* `FlatCurry.XML`: This module contains operations to convert FlatCurry
-  programs into corresponding XML expressions and vice versa.
-  This can be used to store Curry programs in a way independent
-  of a Curry system or to use a Curry system, like PAKCS,
-  as back end by other functional logic programming systems.
-  The [DTD](http://www.curry-lang.org/docs/flatcurry.dtd) to validate
-  these XML representation is also contained in file `flatcurry.dtd`.
